@@ -12,11 +12,12 @@
 # position, 0 = far left, 60 = centre, 120 = far right.
 # DP 112/113: bottom/top ends of the vertical sweep, 0 = level.
 # Equal values park the head. DP 7 and DP 110/111: last write wins.
-# DP 101/102 centre the head; the device resets them itself and turns that
-# axis' oscillation off. DP 106 centres both axes, DP 103/104 step the head
-# 7.5 degrees; these are write only and never reported.
+# DP 101/102 centre the head on one axis (the device resets them itself),
+# DP 106 on both; centring stops that axis' oscillation. DP 103/104 step the
+# head 7.5 degrees. 103/104/106 are write only and never reported.
 # Not mapped: DP 105 sets both oscillation switches (DP 4/5 cover it),
-# DP 108 fault (2 = child lock alarm) is pushed once and never resets,
+# DP 108 fault (2 = child lock alarm) arrives only when the alarm fires and
+# still read 2 after unlocking,
 # DP 109 is wifi_mode (turning it off would drop the device).
 # DP 115 (temperature) is reported only while the app's test switch is on.
 
@@ -207,6 +208,17 @@ entities:
           min: 0
           max: 100
 
+  # -------------------------------------------------------
+  # Head position
+  # -------------------------------------------------------
+  - entity: button
+    name: Center both
+    dps:
+      - id: 106
+        name: button
+        type: boolean
+        optional: true
+
   - entity: button
     name: Center horizontal
     dps:
@@ -215,25 +227,6 @@ entities:
         type: boolean
         optional: true
 
-  - entity: button
-    name: Center vertical
-    dps:
-      - id: 102
-        name: button
-        type: boolean
-        optional: true
-
-  - entity: button
-    name: Center
-    dps:
-      - id: 106
-        name: button
-        type: boolean
-        optional: true
-
-  # -------------------------------------------------------
-  # Step the head 7.5 degrees (write only)
-  # -------------------------------------------------------
   - entity: button
     name: Step left
     dps:
@@ -255,6 +248,14 @@ entities:
         mapping:
           - dps_val: right
             value: true
+
+  - entity: button
+    name: Center vertical
+    dps:
+      - id: 102
+        name: button
+        type: boolean
+        optional: true
 
   - entity: button
     name: Step up
