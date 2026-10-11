@@ -2,6 +2,19 @@
 # Category: fs
 # Product ID (PID): ld6lwruyddlfx7a2
 # Tested with Tuya Local
+#
+# Protocol: this device needs protocol 3.2. On 3.3 a plain status query
+# returns "json obj data unvalid" (Err 900), so entities stay unknown
+# until each setting next changes.
+#
+# DP 107 is the fan speed 1-100. DP 3 (level 1-4) sets it to 1/37/77/100.
+# DP 110/111: left/right ends of the horizontal sweep, absolute head
+# position, 0 = far left, 60 = centre, 120 = far right.
+# DP 112/113: bottom/top ends of the vertical sweep, 0 = level.
+# Equal values park the head. DP 7 and DP 110/111: last write wins.
+# DP 101/102 centre the head; the device resets them itself and turns that
+# axis' oscillation off.
+# DP 115 (temperature) is reported only while the app's test switch is on.
 
 name: Circulating fan
 products:
@@ -27,15 +40,37 @@ entities:
             value: normal
           - dps_val: nature
             value: nature
-          - dps_val: smart
-            value: smart
+          - dps_val: temp
+            value: auto
 
-      - id: 3
+      - id: 5
+        name: oscillate
+        type: boolean
+
+      - id: 107
         name: speed
         type: integer
+        optional: true
         range:
           min: 1
-          max: 4
+          max: 100
+
+  - entity: select
+    name: Speed level
+    dps:
+      - id: 3
+        name: option
+        type: integer
+        optional: true
+        mapping:
+          - dps_val: 1
+            value: "1"
+          - dps_val: 2
+            value: "2"
+          - dps_val: 3
+            value: "3"
+          - dps_val: 4
+            value: "4"
 
   # -------------------------------------------------------
   # Timer
@@ -116,6 +151,88 @@ entities:
             value: 90°
           - dps_val: "120"
             value: 120°
+
+  # -------------------------------------------------------
+  # Sweep end positions
+  # -------------------------------------------------------
+  - entity: number
+    name: Horizontal sweep left
+    dps:
+      - id: 110
+        name: value
+        type: integer
+        optional: true
+        unit: "°"
+        range:
+          min: 0
+          max: 120
+
+  - entity: number
+    name: Horizontal sweep right
+    dps:
+      - id: 111
+        name: value
+        type: integer
+        optional: true
+        unit: "°"
+        range:
+          min: 0
+          max: 120
+
+  - entity: number
+    name: Vertical sweep bottom
+    dps:
+      - id: 112
+        name: value
+        type: integer
+        optional: true
+        unit: "°"
+        range:
+          min: 0
+          max: 100
+
+  - entity: number
+    name: Vertical sweep top
+    dps:
+      - id: 113
+        name: value
+        type: integer
+        optional: true
+        unit: "°"
+        range:
+          min: 0
+          max: 100
+
+  - entity: button
+    name: Center horizontal
+    dps:
+      - id: 101
+        name: button
+        type: boolean
+        optional: true
+
+  - entity: button
+    name: Center vertical
+    dps:
+      - id: 102
+        name: button
+        type: boolean
+        optional: true
+
+  # -------------------------------------------------------
+  # Sensors
+  # -------------------------------------------------------
+  - entity: sensor
+    class: temperature
+    dps:
+      - id: 115
+        name: sensor
+        type: integer
+        optional: true
+        unit: C
+        class: measurement
+        mapping:
+          - scale: 10
 
   # -------------------------------------------------------
   # Misc
